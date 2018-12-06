@@ -13,8 +13,8 @@ def generate_bytecode(path):
             name = f[:index]
 
             # def ll&bc dir
-            dir_ll = '../cpp_ll/'
-            dir_bc = '../cpp_bc/'
+            dir_ll = '../../cpp_ll/'
+            dir_bc = '../../cpp_bc/'
 
             # use llvm-clang to compile the source file
             exe_cmd('clang -O0 -emit-llvm ' + path + f + ' -S -o ' + dir_ll + name + '.ll')
@@ -30,4 +30,5 @@ def exe_cmd(cmd):
 
 
 if __name__ == '__main__':
+    print(os.getcwd())
     generate_bytecode('../cpp_raw/')
