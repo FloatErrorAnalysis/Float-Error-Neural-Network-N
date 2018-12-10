@@ -6,7 +6,9 @@ class CNN:
         # 参数设置
         self.batch_size = 64
         # byte code的输入格式定义为 150 * 32
-        self.input_x = 150
+        # TODO
+        # FIX 改成了 180 * 32
+        self.input_x = 180
         self.input_y = 32
         self.output_size = 5
         # 正则项系数
@@ -104,3 +106,4 @@ class CNN:
         with self.graph.as_default():
             train_op = tf.train.AdamOptimizer(beta2=0.9999).minimize(self.loss)
             return train_op
+

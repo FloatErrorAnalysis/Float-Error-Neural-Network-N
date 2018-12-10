@@ -109,3 +109,4 @@ venv.bak/
 # data
 data_set/*
 data_raw/*
+py/util/CNN_PY.py
