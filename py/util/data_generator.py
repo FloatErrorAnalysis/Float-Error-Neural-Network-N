@@ -4,16 +4,25 @@ import operator
 import numpy as np
 from py.util.BCTool import generate_bytecode
 
-ll_dir_path = '../../cpp_raw/add/'
+cpp_dir_path = '../../cpp_raw/add/'
+ll_dir_path = '../../cpp_bc/'
 
 
 def generate_ll():
     lls = []
-    generate_bytecode(ll_dir_path)
+    generate_bytecode(cpp_dir_path)
     for ll in sorted(os.listdir(ll_dir_path)):
-        print(ll)
+       # print(ll)
+       #  with open(ll_dir_path + ll, 'rb') as f:
+       #      lls.append(f)
         with open(ll_dir_path + ll, 'rb') as f:
-            lls.append(f)
+            byte = f.read(1)
+            bytes = []
+            while byte:
+                byte = f.read(1)
+                bytes.append(byte)
+            lls.append(bytes)
+
     return lls
 
 
@@ -21,7 +30,7 @@ def generate_error():
     error_list = []
     for f in sorted(os.listdir('/root/tmp/dataset/')):
         if f.split('.')[-1] == 'csv':
-            print(get_top5(f))
+           # print(get_top5(f))
             error_list.append(get_top5(f))
     return error_list
 
@@ -38,6 +47,7 @@ def get_top5(csv_name):
 def read_data():
     lls = generate_ll()
     errors = generate_error()
+    print('Length of ll: ' + len(lls))
     lls = np.array(lls)
     errors = np.array(errors)
     print("shape of lls: {}\tshape of errors: {}".format(lls.shape, errors.shape))
