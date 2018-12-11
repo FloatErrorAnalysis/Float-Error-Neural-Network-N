@@ -47,7 +47,7 @@ def get_top5(csv_name):
 def read_data():
     lls = generate_ll()
     errors = generate_error()
-    print('Length of ll: ' + len(lls))
+    print('Length of ll: ' + str(len(lls)))
     lls = np.array(lls)
     errors = np.array(errors)
     print("shape of lls: {}\tshape of errors: {}".format(lls.shape, errors.shape))
