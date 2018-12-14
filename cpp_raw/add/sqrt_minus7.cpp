@@ -1,5 +1,0 @@
-#include "cmath" 
-using namespace std;
-double sqrt_minus_error(double x) {
-   return sqrt(x+8) - sqrt(x+7);
-}

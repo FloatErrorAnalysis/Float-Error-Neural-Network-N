@@ -111,13 +111,15 @@ class CppRawGenerator:
         exe_cmd('cd ../../cpp_raw/mul/' + '\nrm -f *.cpp')
         exe_cmd('cd ../../cpp_raw_error/add/src/' + '\nrm -f *.cpp')
         exe_cmd('cd ../../cpp_raw_error/mul/src/' + '\nrm -f *.cpp')
+        exe_cmd('cd ../../cpp_raw_error/add/bin/' + '\nrm -f *')
+        exe_cmd('cd ../../cpp_raw_error/mul/bin/' + '\nrm -f *')
 
 
 print(os.getcwd())
 cpp_gen = CppRawGenerator()
 # cpp_gen.generate_sqrt_minus_add(30)
 # cpp_gen.generate_sqrt_minus_mul(30)
-# cpp_gen.clean_all()
+cpp_gen.clean_all()
 # cpp_gen.generate_add_ll()
 # cpp_gen.generate_mul_ll()
-cpp_gen.generate_csv()
+# cpp_gen.generate_csv()
