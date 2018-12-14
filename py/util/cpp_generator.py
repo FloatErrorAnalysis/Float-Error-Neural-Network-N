@@ -1,11 +1,12 @@
 import os
-from py.util.BCTool import generate_bytecode
-from py.util.BCTool import exe_cmd
+from py.util.byte_code_tool import generate_bytecode
+from py.util.byte_code_tool import exe_cmd
 import time
 
 
 class CppRawGenerator:
-    cmd0 = 'cd /root/tmp/examples/'
+    cd_cmd_add = 'cd ../../cpp_raw_error/add/'
+    cd_cmd_mul = 'cd ../../cpp_raw_error/mul/'
 
     cpp_str_prefix = '#include \"cmath\" \nusing namespace std;\n' \
                      'double sqrt_minus_error(double x) {\n'
@@ -23,8 +24,11 @@ class CppRawGenerator:
 
     error_str2_2 = '  return REAL(1) / (REAL(sqrt(x + 1)) + REAL(sqrt(x)));\n}\n'
 
-    error_str3 = 'void generate_data(double low_bound, double high_bound, double gap) {\n' \
-                 '  orstream file("/root/tmp/dataset/'\
+    error_str3_1 = 'void generate_data(double low_bound, double high_bound, double gap) {\n' \
+                   '  orstream file("../../../dataset/add/' \
+
+    error_str3_2 = 'void generate_data(double low_bound, double high_bound, double gap) {\n' \
+                   '  orstream file("../../../dataset/mul/' \
 
     error_str4 = '.csv", std::ios::out);\n' \
                  '  int number = static_cast<int>((high_bound - low_bound) / gap);\n' \
@@ -40,73 +44,80 @@ class CppRawGenerator:
                  '  generate_data(0, 10000, 1);\n' \
                  '}\n'
 
-    cpp_prefix_path = '../../dataset/sqrt_minus'
+    raw_file_path_prefix = '../../cpp_raw/'
+    error_file_path_prefix = '../../cpp_raw_error/'
 
-    file_path_prefix = '../../cpp_raw/'
     # sqrt(n * x  + 1) - sqrt(n * x)
-
     def generate_sqrt_minus_mul(self, num):
         for i in range(1, num + 1):
-            with open(self.file_path_prefix + 'mul/sqrt_minus' + str(i) + '.cpp', 'w') as f:
+            with open(self.raw_file_path_prefix + 'mul/sqrt_minus' + str(i) + '.cpp', 'w') as f:
                 tmp = self.cpp_str0.replace('x', str(i) + '*x')
                 f.writelines(self.cpp_str_prefix + tmp)
 
             # csv cpp
             # 需要修改本机对应的路径
-            with open(self.cpp_prefix_path + str(i) + '.cpp', 'w') as f:
+            with open(self.error_file_path_prefix + 'mul/src/error_sqrt_minus' + str(i) + '.cpp', 'w') as f:
                 tmp1 = self.error_str0 + self.cpp_normal_prefix + tmp + '\n' + self.error_str2_1 + \
-                       self.error_str2_2.replace('x', str(i) + '*x') + self.error_str3 + str(i) + self.error_str4
+                       self.error_str2_2.replace('x', str(i) + '*x') + self.error_str3_2 + str(i) + self.error_str4
                 f.writelines(tmp1)
 
     # sqrt(x + n + 1) - sqrt(x + n)
     def generate_sqrt_minus_add(self, num):
         for i in range(1, num + 1):
-            with open(self.file_path_prefix + 'add/sqrt_minus' + str(i) + '.cpp', 'w') as f:
+            with open(self.raw_file_path_prefix + 'add/sqrt_minus' + str(i) + '.cpp', 'w') as f:
                 cpp_str = self.cpp_str0.replace('x', 'x+' + str(i))
                 cpp_str = cpp_str.replace('x+' + str(i) + '+1', 'x+' + str(i + 1)) + '\n'
                 tmp = cpp_str
                 cpp_str = self.cpp_str_prefix + cpp_str
                 f.writelines(cpp_str)
 
-
             # csv cpp
             # 需要修改本机对应的路径
-            with open('/root/tmp/examples/sqrt_minus' + str(i) + '.cpp', 'w') as f:
-                tmp2 = self.error_str2_1 + self.error_str2_2.replace('x', 'x+' + str(i)).replace('x+' + str(i) + '+1', 'x+' + str(i + 1))
-                tmp1 = self.error_str0 + self.cpp_normal_prefix + tmp + '\n' + tmp2 +\
-                       self.error_str3 + str(i) + self.error_str4
+            with open(self.error_file_path_prefix + 'add/src/error_sqrt_minus' + str(i) + '.cpp', 'w') as f:
+                tmp2 = self.error_str2_1 + self.error_str2_2.replace('x', 'x+' + str(i)).replace('x+' + str(i) + '+1',
+                                                                                                 'x+' + str(i + 1))
+                tmp1 = self.error_str0 + self.cpp_normal_prefix + tmp + '\n' + tmp2 + \
+                       self.error_str3_1 + str(i) + self.error_str4
                 f.writelines(tmp1)
 
-    def get_error_cpp(self):
-        with open(self.cpp_prefix_path + 'sqrt_minus1.cpp') as f:
-            cpp_lst = f.readlines()
-        return cpp_lst
-
-
     def generate_add_ll(self):
-        generate_bytecode('../../cpp_raw/add/')
+        generate_bytecode('../../cpp_raw/add/', 'add')
 
-    # 路径修改 TODO
+    def generate_mul_ll(self):
+        generate_bytecode('../../cpp_raw/mul/', 'mul')
+
+    # 路径修改
     def generate_csv(self):
         # 编译
-        for f in os.listdir('/root/tmp/examples/'):
-            postfix = f.split('.')[-1]
-            if postfix == 'cpp':
-                print(f)
-             #   exe_cmd('cd /root/tmp/examples')
-                exe_cmd(self.cmd0 + '\n make ' + '/root/tmp/examples/' + f.split('.')[0])
-                time.sleep(1)
+        exe_cmd(self.cd_cmd_add + 'src/' + '\nmake')
+        time.sleep(1)
+        exe_cmd(self.cd_cmd_mul + 'src/' + '\nmake')
+        time.sleep(1)
 
-        # 执行
-        for f in os.listdir('/root/tmp/examples/'):
-            print('Execute csv...')
-            if 'sqrt_minus' in f.split('.')[0] and '.' not in f:
-                print(f)
-                exe_cmd(self.cmd0 + '\n./' + f)
+        # 执行 add
+        print('Execute add csv...')
+        for f in os.listdir('../../cpp_raw_error/add/bin/'):
+            print(f)
+            exe_cmd(self.cd_cmd_add + 'bin/' + '\n./' + f)
+
+        # 执行 mul
+        print('Execute mul csv...')
+        for f in os.listdir('../../cpp_raw_error/mul/bin/'):
+            print(f)
+            exe_cmd(self.cd_cmd_mul + 'bin/' + '\n./' + f)
+
+    def clean_all(self):
+        exe_cmd('cd ../../cpp_raw/add/' + '\nrm -f *.cpp')
+        exe_cmd('cd ../../cpp_raw/mul/' + '\nrm -f *.cpp')
+        exe_cmd('cd ../../cpp_raw_error/add/src/' + '\nrm -f *.cpp')
+        exe_cmd('cd ../../cpp_raw_error/mul/src/' + '\nrm -f *.cpp')
 
 
 print(os.getcwd())
 cpp_gen = CppRawGenerator()
-cpp_gen.generate_sqrt_minus_add(30)
-cpp_gen.generate_add_ll()
+# cpp_gen.generate_sqrt_minus_add(30)
+# cpp_gen.generate_sqrt_minus_mul(30)
+# cpp_gen.clean_all()
+# cpp_gen.generate_add_ll()
+# cpp_gen.generate_mul_ll()
 cpp_gen.generate_csv()

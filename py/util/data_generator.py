@@ -2,19 +2,16 @@ import os
 import csv
 import operator
 import numpy as np
-from py.util.BCTool import generate_bytecode
+from py.util.byte_code_tool import generate_bytecode
 
 cpp_dir_path = '../../cpp_raw/add/'
 ll_dir_path = '../../cpp_bc/'
 
 
-def generate_ll():
+def get_ll():
     lls = []
     generate_bytecode(cpp_dir_path)
     for ll in sorted(os.listdir(ll_dir_path)):
-       # print(ll)
-       #  with open(ll_dir_path + ll, 'rb') as f:
-       #      lls.append(f)
         with open(ll_dir_path + ll, 'rb') as f:
             byte = f.read(1)
             bytes = []
@@ -26,11 +23,10 @@ def generate_ll():
     return lls
 
 
-def generate_error():
+def get_error():
     error_list = []
     for f in sorted(os.listdir('/root/tmp/dataset/')):
         if f.split('.')[-1] == 'csv':
-           # print(get_top5(f))
             error_list.append(get_top5(f))
     return error_list
 
@@ -45,8 +41,8 @@ def get_top5(csv_name):
 
 
 def read_data():
-    lls = generate_ll()
-    errors = generate_error()
+    lls = get_ll()
+    errors = get_error()
     print('Length of ll: ' + str(len(lls)))
     lls = np.array(lls)
     errors = np.array(errors)
