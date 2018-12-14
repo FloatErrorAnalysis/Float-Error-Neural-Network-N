@@ -109,5 +109,14 @@ venv.bak/
 # data
 dataset/*
 
+# cpp_bc
+cpp_bc/*
+
 # cpp_ll
 cpp_ll/*
+
+# cpp_raw
+cpp_raw/*
+
+# cpp_raw_error
+cpp_raw_error/*
