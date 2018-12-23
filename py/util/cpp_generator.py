@@ -113,6 +113,12 @@ class CppRawGenerator:
         exe_cmd('cd ../../cpp_raw_error/mul/src/' + '\nrm -f *.cpp')
         exe_cmd('cd ../../cpp_raw_error/add/bin/' + '\nrm -f *')
         exe_cmd('cd ../../cpp_raw_error/mul/bin/' + '\nrm -f *')
+        exe_cmd('cd ../../cpp_bc/add/' + '\nrm -f *.bc')
+        exe_cmd('cd ../../cpp_bc/mul/' + '\nrm -f *.bc')
+        exe_cmd('cd ../../cpp_ll/add/' + '\nrm -f *.ll')
+        exe_cmd('cd ../../cpp_ll/mul/' + '\nrm -f *.ll')
+        exe_cmd('cd ../../dataset/add/' + '\nrm -f *.csv')
+        exe_cmd('cd ../../dataset/mul/' + '\nrm -f *.csv')
 
 
 print(os.getcwd())
