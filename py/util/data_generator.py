@@ -1,6 +1,7 @@
 import os
 import csv
 import operator
+import random
 import numpy as np
 
 ll_dir_path = '../../cpp_bc/'
@@ -52,7 +53,7 @@ def get_top5_input(csv_name):
     for k, v in data_list.items():
         data_list[k] = float(v)
     sorted_list = sorted(data_list.items(), key=operator.itemgetter(1), reverse=True)
-    # only use the input
+    # 这里只使用输入，输出误差可以计算不加入以简化模型
     return [input[0] for input in sorted_list[:5]]
 
 
@@ -63,3 +64,15 @@ def read_data():
     errors = np.array(errors)
     print('shape of lls: {}\tshape of errors: {}'.format(lls.shape, errors.shape))
     return lls, errors
+
+
+def generate_batch(batch_size, data_x, data_y):
+    x = np.array([batch_size, len(data_x[0])])
+    y = np.array([batch_size, len(data_y[0])])
+
+    for i in range(batch_size):
+        index = random.randint(0, len(data_x) - 1)
+        x[i] = data_x[index]
+        y[i] = data_y[index]
+
+    return x, y

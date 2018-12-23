@@ -1,13 +1,14 @@
 import tensorflow as tf
+import py.util.data_generator as generator
 
 
 class CNN:
     def __init__(self):
         # 参数设置
         self.batch_size = 64
-        # byte code的输入格式定义为 185 * 32
-        self.input_x = 185
-        self.input_y = 32
+        # byte code的输入格式定义为 145 * 16
+        self.input_x = 145
+        self.input_y = 16
         self.output_size = 5
         # 正则项系数
         self.regular_scale = 0.001
@@ -87,9 +88,10 @@ class CNN:
     # 建立预测的损失函数
     def build_loss(self):
         with self.graph.as_default():
-            mse = tf.losses.mean_squared_error(self.y, self.prediction)
+            cross_entropy = tf.reduce_sum(
+                tf.nn.sigmoid_cross_entropy_with_logits(labels=self.y, logits=self.prediction))
             reg_term = self.build_regular_term()
-            loss = mse + reg_term
+            loss = cross_entropy + reg_term
             return loss
 
     # 建立正则项
@@ -105,3 +107,75 @@ class CNN:
             train_op = tf.train.AdamOptimizer(beta2=0.9999).minimize(self.loss)
             return train_op
 
+    # 多标签结果
+    def get_multi_result(self):
+        with self.graph.as_default():
+            soft_max = tf.nn.softmax(self.prediction)
+            # value -> 对应的是 top k 的概率值
+            # index -> 对应的是 top k 的下标
+            # 举个例子 [1,5,2,4,6]  top 2 : value -> [6, 5]  index -> [4,1]
+            value, index = tf.nn.top_k(soft_max, k=self.output_size)
+            return value, index
+
+
+#
+#   训练部分
+#
+train_batch_size = 10
+valid_batch_size = 10
+test_batch_size = 10
+iteration = 100000
+
+# 加载数据
+print("reading data from dataset...")
+train_data_x, train_data_y = generator.read_data()
+valid_data_x, valid_data_y = generator.read_data()
+test_data_x, test_data_y = generator.read_data()
+print("reading complete!")
+
+# 构造模型
+model = CNN()
+# 启动
+with model.graph.as_default():
+    with tf.Session() as sess:
+        # 初始化变量
+        sess.run(tf.global_variables_initializer())
+        # 保存
+        saver = tf.train.Saver(max_to_keep=1)
+        # 检查点
+        ckpt = tf.train.get_checkpoint_state('./cnn_model')
+        if ckpt and ckpt.model_checkpoint_path:
+            saver.restore(sess, ckpt.model_checkpoint_path)
+
+        # 可视化
+        tf.summary.scalar("loss", model.loss)
+        merged = tf.summary.merge_all()
+        writer = tf.summary.FileWriter("./cnn_logs", sess.graph)
+
+        # 训练部分
+        for i in range(iteration):
+            x_train, y_train = generator.generate_batch(train_batch_size, train_data_x, train_data_y)
+            x_valid, y_valid = generator.generate_batch(valid_batch_size, valid_data_x, valid_data_y)
+            x_test, y_test = generator.generate_batch(test_batch_size, test_data_x, test_data_y)
+
+            if i % 100 == 0:
+                print("step:", i, "train:",
+                      sess.run([model.loss],
+                               feed_dict={model.x: train_data_x, model.y: train_data_y, model.keep_prob: 1}))
+                valid_x, valid_y = generator.generate_batch(valid_batch_size, valid_data_x, valid_data_y)
+                print("step:", i, "valid:",
+                      sess.run([model.loss], feed_dict={model.x: valid_x, model.y: valid_y, model.keep_prob: 1}))
+
+                saver.save(sess, "./", global_step=i)
+
+            _, summary = sess.run([model.train_op, merged],
+                                  feed_dict={model.x: train_data_x, model.y: train_data_y, model.keep_prob: 1})
+            writer.add_summary(summary, i)
+
+            _, summary = sess.run([model.train_op, merged],
+                                  feed_dict={model.x: x_valid, model.y: y_valid, model.keep_prob: 1})
+            writer.add_summary(summary, i)
+
+            _, summary = sess.run([model.train_op, merged],
+                                  feed_dict={model.x: x_test, model.y: y_test, model.keep_prob: 1})
+            writer.add_summary(summary, i)
