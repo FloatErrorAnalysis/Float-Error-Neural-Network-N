@@ -169,7 +169,7 @@ with model.graph.as_default():
                 saver.save(sess, "./", global_step=i)
 
             _, summary = sess.run([model.train_op, merged],
-                                  feed_dict={model.x: train_data_x, model.y: train_data_y, model.keep_prob: 1})
+                                  feed_dict={model.x: x_train, model.y: y_train, model.keep_prob: 1})
             writer.add_summary(summary, i)
 
             _, summary = sess.run([model.train_op, merged],

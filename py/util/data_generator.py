@@ -23,9 +23,9 @@ def get_ll(path):
             while n < x * y:
                 byte = f.read(1)
                 if byte:
-                    byte_array.append(byte)
+                    byte_array.append(ord(byte))
                 else:
-                    byte_array.append(b'00')
+                    byte_array.append(0)
                 n = n + 1
             lls.append(byte_array)
     return lls
@@ -54,7 +54,7 @@ def get_top5_input(csv_name):
         data_list[k] = float(v)
     sorted_list = sorted(data_list.items(), key=operator.itemgetter(1), reverse=True)
     # 这里只使用输入，输出误差可以计算不加入以简化模型
-    return [input[0] for input in sorted_list[:5]]
+    return [float(input[0]) for input in sorted_list[:5]]
 
 
 def read_data():
@@ -67,12 +67,13 @@ def read_data():
 
 
 def generate_batch(batch_size, data_x, data_y):
-    x = np.array([batch_size, len(data_x[0])])
-    y = np.array([batch_size, len(data_y[0])])
+    batch_x = np.zeros((batch_size, len(data_x[0])), dtype=float)
+    batch_y = np.zeros((batch_size, len(data_y[0])), dtype=float)
 
     for i in range(batch_size):
-        index = random.randint(0, len(data_x) - 1)
-        x[i] = data_x[index]
-        y[i] = data_y[index]
+        index_x = random.randint(0, len(data_x) - 1)
+        index_y = random.randint(0, len(data_y) - 1)
+        batch_x[i] = data_x[index_x]
+        batch_y[i] = data_y[index_y]
 
-    return x, y
+    return batch_x, batch_y
